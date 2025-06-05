@@ -9,7 +9,6 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  GH_TOKEN: ${{ github.token }}
 
 jobs:
   build:
@@ -39,6 +38,8 @@ jobs:
           sudo apt-get install -y musl-tools
 
       - name: Build (release) for ${{ matrix.target }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=aarch64-linux-gnu-gcc
           export CC=aarch64-linux-gnu-gcc
