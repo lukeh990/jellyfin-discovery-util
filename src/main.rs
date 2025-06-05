@@ -52,9 +52,8 @@ fn main() {
             }
         } else {
             trace!(
-                "Invalid Discovery: {:?} -> {}",
-                &buf,
-                handle_error(str::from_utf8(&buf[..]), 105)
+                "Invalid Discovery: {:?}",
+                &buf
             );
         }
     }
@@ -122,7 +121,7 @@ fn systemd_logger() -> Result<(), Box<dyn error::Error>> {
         .with_extra_fields(vec![("VERSION", env!("CARGO_PKG_VERSION"))])
         .install()?;
 
-    log::set_max_level(LevelFilter::Trace);
+    log::set_max_level(LevelFilter::Info);
 
     Ok(())
 }
