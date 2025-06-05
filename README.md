@@ -74,11 +74,98 @@ this process as a V2Message.
 
 ## Getting Started
 
-WIP
-
 ### Download
+
+The latest version of the binary can be simply domloaded with:
+```sh
+# ARM (aarch64)
+wget https://github.com/lukeh990/jellyfin-discovery-util/releases/latest/download/aarch64-jellyfin-discovery-util
+
+# x86_64
+wget https://github.com/lukeh990/jellyfin-discovery-util/releases/latest/download/x86_64-jellyfin-discovery-util
+```
+
+Remember that if you want to run it you need to do:
+```sh
+chmod +x {ARCH}-jellyfin-discovery-util
+```
+
 ### Install
-### Sample systemd Service
+
+You can just manually run the binary however you want, but if you want to set
+it up for automatic running, here is a guide.
+
+1. Move binary to `/usr/bin/local`
+
+```sh
+sudo mv {ARCH}-jellyfin-discovery-util /usr/local/bin/jellyfin-discovery-util
+sudo chown root:root /usr/local/bin/jellyfin-discovery-util
+```
+
+2. Create a system user for the service
+
+```sh
+sudo useradd -M -r jd-util
+```
+This ceates a new system user (`-r`) with no home directory (`-M`) called 
+`jd-util`. This allows us to protect the root account by running as a less
+privileged user.
+
+3. Create a directory for our config
+
+```sh
+sudo mkdir /etc/jd-util
+```
+
+If you already made a config put it in here. If you don't a sample config will
+be made for you at `/etc/jd-util/discover.toml`
+
+```sh
+sudo chown -R jd-util:jd-util /etc/jd-util
+```
+
+Make sure that our system user can access the config and the directory.
+
+4. Create a systemd unit
+
+I put my systemd unit in this file: `/etc/systemd/system/jd-util.service`
+
+```systemd
+[Unit]
+Description=Jellyfin Discovery Utility
+After=network.target
+
+[Service]
+Type=simple
+User=jd-util
+Group=jd-util
+WorkingDirectory=/etc/jd-util
+ExecStart=/usr/local/bin/jellyfin-discovery-util
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+After saving this file, run these commands to setup allow the service to start
+on boot.
+
+```sh
+sudo systemctl daemon-reload
+sydo systemctl enable --now jd-util
+```
+
+The binary will automatically integrate with journald and will properly send
+logs which can be view with either
+
+```sh
+sudo systemctl status jd-util
+
+# OR
+
+sudo journalctl -u jd-util.service
+```
 
 ## License
 
