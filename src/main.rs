@@ -22,7 +22,7 @@ use systemd_journal_logger::{JournalLog, connected_to_journal};
 fn main() {
     enable_logging();
 
-    info!("Starting Jellyfin Discovery Utility. v1.0.3");
+    info!("Starting Jellyfin Discovery Utility. v1.0.4");
 
     let config = handle_error(config::read_config(), 100);
 
