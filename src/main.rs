@@ -9,7 +9,8 @@ mod config;
 
 use bytes::{Bytes, BytesMut};
 use config::ServerConfig;
-use log::{debug, error, info, trace};
+use env_logger::Env;
+use log::{LevelFilter, debug, error, info, trace};
 use serde::Serialize;
 use std::{
     error,
@@ -103,11 +104,15 @@ where
 fn enable_logging() {
     if connected_to_journal() {
         if systemd_logger().is_err() {
-            env_logger::init();
+            env_logger();
         }
     } else {
-        env_logger::init();
+        env_logger();
     }
+}
+
+fn env_logger() {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 }
 
 fn systemd_logger() -> Result<(), Box<dyn error::Error>> {
@@ -116,6 +121,8 @@ fn systemd_logger() -> Result<(), Box<dyn error::Error>> {
     journal_log
         .with_extra_fields(vec![("VERSION", env!("CARGO_PKG_VERSION"))])
         .install()?;
+
+    log::set_max_level(LevelFilter::Trace);
 
     Ok(())
 }
