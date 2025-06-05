@@ -43,7 +43,7 @@ fn main() {
 
         trace!("Injested {} bytes from {}", amt, &src);
 
-        if &buf[..] == b"who is JellyfinServer?" {
+        if &buf[..] == b"who is JellyfinServer?" || &buf[..] == b"Who is JellyfinServer?" {
             trace!("Valid Discovery");
 
             for response in &preconstructed_response {
