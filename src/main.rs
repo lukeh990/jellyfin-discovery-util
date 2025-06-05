@@ -51,10 +51,7 @@ fn main() {
                 trace!("Sent response");
             }
         } else {
-            trace!(
-                "Invalid Discovery: {:?}",
-                &buf
-            );
+            trace!("Invalid Discovery: {:?}", &buf);
         }
     }
 }
