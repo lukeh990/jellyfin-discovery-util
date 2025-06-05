@@ -42,7 +42,7 @@ fn main() {
 
         trace!("Injested {} bytes from {}", amt, &src);
 
-        if &buf[..] == b"Who is JellyfinServer?" {
+        if &buf[..] == b"who is JellyfinServer?" {
             trace!("Valid Discovery");
 
             for response in &preconstructed_response {
@@ -50,7 +50,11 @@ fn main() {
                 trace!("Sent response");
             }
         } else {
-            trace!("Invalid Discovery");
+            trace!(
+                "Invalid Discovery: {:?} -> {}",
+                &buf,
+                handle_error(str::from_utf8(&buf[..]), 105)
+            );
         }
     }
 }
