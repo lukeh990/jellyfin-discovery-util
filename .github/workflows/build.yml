@@ -1,0 +1,78 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - "master"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-unknown-linux-musl
+            arch: aarch64
+          - target: x86_64-unknown-linux-musl
+            arch: x86_64
+    
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Setup Toolchain"
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Install MUSL linker (musl-tools)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Build (release) for ${{ matrix.target }}
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.arch }}-jellyfin-discovery-util
+          path: target/${{ matrix.target }}/release/jellyfin-discovery-util
+  release:
+    name: Create Draft Release & Attach Binaries
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.arch }}-jellyfin-discovery-util
+          path: ./artifacts/${{ matrix.arch }}
+
+      - name: Create a new draft release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload assets to the draft release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/${{ matrix.arch }}/${{ matrix.arch }}-jellyfin-discovery-util
+          asset_name: ${{ matrix.arch }}-jellyfin-discovery-util
+          asset_content_type: application/x-elf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
